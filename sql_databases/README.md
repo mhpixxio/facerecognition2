@@ -1,0 +1,1 @@
+use database "facerecognition" when creating the tables
