@@ -14,7 +14,7 @@ func ConnectToSQLDatabase() (*sql.DB, error) {
 		User:   "root",
 		Passwd: "123", //security obviously has to be changed at deployment
 		Net:    "tcp",
-		Addr:   "127.0.0.1:3306",
+		Addr:   "host.docker.internal:3306",
 		DBName: "facerecognition",
 	}
 	db, err := sql.Open("mysql", cfg.FormatDSN())

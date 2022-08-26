@@ -5,7 +5,6 @@ import (
 	"flag"
 	"log"
 	"net"
-	"time"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -89,9 +88,6 @@ func main() {
 	pbface2.RegisterRemoveFacesFromDatabaseServiceServer(s, &serverRemoveFacesFromDatabase{})
 	pbface2.RegisterRemoveFilesFromDatabaseServiceServer(s, &serverRemoveFilesFromDatabase{})
 	reflection.Register(s)
-	if err := s.Serve(listener); err != nil {
-		log.Printf("failed to serve: %v", err)
-	}
 
 	//---------------------------------- set the sql connection for the databases ----------------------------------
 	db, err := ConnectToSQLDatabase()
@@ -99,14 +95,26 @@ func main() {
 		log.Println(err)
 	}
 
-	//---------------------------------- loop for updating the sql tables ----------------------------------
-	for {
-		time.Sleep(time.Minute)
+	//---------------------------------- updating the sql tables ----------------------------------
+	numberOfUnprocessedFiles := 1
+	for numberOfUnprocessedFiles > 0 {
 		err = UpdateFacesAndClusters(db)
 		if err != nil {
 			log.Println(err)
 		}
+		err = db.QueryRow("SELECT COUNT(*) FROM files WHERE processed = ?", false).Scan(&numberOfUnprocessedFiles)
+		if err != nil {
+			log.Println(err)
+		}
+		log.Printf("%v number of files left for processing", numberOfUnprocessedFiles)
 	}
+
+	//---------------------------------- start listening to clients ----------------------------------
+	log.Println("ready for service")
+	if err := s.Serve(listener); err != nil {
+		log.Printf("failed to serve: %v", err)
+	}
+
 }
 
 //---------------------------------- the grpc functions that call their corresponding functions ----------------------------------
@@ -115,49 +123,49 @@ func (s *serverReclustering) ReclusteringFunc(ctx context.Context, request *pbfa
 	db, err := ConnectToSQLDatabase()
 	if err != nil {
 		log.Println(err)
-		return nil, err
+		return &pbface2.ErrMessage{ErrString: ""}, err
 	}
 	err = Reclustering(db)
 	if err != nil {
 		log.Println(err)
-		return nil, err
+		return &pbface2.ErrMessage{ErrString: ""}, err
 	}
-	return nil, nil
+	return &pbface2.ErrMessage{ErrString: ""}, nil
 }
 
 func (s *serverUpdateFacesAndClusters) UpdateFacesAndClustersFunc(ctx context.Context, request *pbface2.EmptyMessage) (*pbface2.ErrMessage, error) {
 	db, err := ConnectToSQLDatabase()
 	if err != nil {
 		log.Println(err)
-		return nil, err
+		return &pbface2.ErrMessage{ErrString: ""}, err
 	}
 	err = UpdateFacesAndClusters(db)
 	if err != nil {
 		log.Println(err)
-		return nil, err
+		return &pbface2.ErrMessage{ErrString: ""}, err
 	}
-	return nil, nil
+	return &pbface2.ErrMessage{ErrString: ""}, nil
 }
 
 func (s *serverRenameCluster) RenameClusterFunc(ctx context.Context, request *pbface2.RenameClusterMessage) (*pbface2.ErrMessage, error) {
 	db, err := ConnectToSQLDatabase()
 	if err != nil {
 		log.Println(err)
-		return nil, err
+		return &pbface2.ErrMessage{ErrString: ""}, err
 	}
 	err = RenameCluster(db, request.ClusterID, request.NewPersonName)
 	if err != nil {
 		log.Println(err)
-		return nil, err
+		return &pbface2.ErrMessage{ErrString: ""}, err
 	}
-	return nil, nil
+	return &pbface2.ErrMessage{ErrString: ""}, nil
 }
 
 func (s *serverMergeClusters) MergeClusterFunc(ctx context.Context, request *pbface2.MergeClustersMessage) (*pbface2.ErrMessage, error) {
 	db, err := ConnectToSQLDatabase()
 	if err != nil {
 		log.Println(err)
-		return nil, err
+		return &pbface2.ErrMessage{ErrString: ""}, err
 	}
 	var clusterIDs []string
 	for i := 0; i < len(request.ClusterIDs); i++ {
@@ -166,16 +174,16 @@ func (s *serverMergeClusters) MergeClusterFunc(ctx context.Context, request *pbf
 	err = MergeClusters(db, clusterIDs)
 	if err != nil {
 		log.Println(err)
-		return nil, err
+		return &pbface2.ErrMessage{ErrString: ""}, err
 	}
-	return nil, nil
+	return &pbface2.ErrMessage{ErrString: ""}, nil
 }
 
 func (s *serverMoveFacesToAnotherCluster) MoveFacesToAnotherClusterFunc(ctx context.Context, request *pbface2.MoveFacesToAnotherClusterMessage) (*pbface2.ErrMessage, error) {
 	db, err := ConnectToSQLDatabase()
 	if err != nil {
 		log.Println(err)
-		return nil, err
+		return &pbface2.ErrMessage{ErrString: ""}, err
 	}
 	var faceIDs []int
 	for i := 0; i < len(request.FaceIDs); i++ {
@@ -184,16 +192,16 @@ func (s *serverMoveFacesToAnotherCluster) MoveFacesToAnotherClusterFunc(ctx cont
 	err = MoveFacesToAnotherCluster(db, faceIDs, request.ClusterID)
 	if err != nil {
 		log.Println(err)
-		return nil, err
+		return &pbface2.ErrMessage{ErrString: ""}, err
 	}
-	return nil, nil
+	return &pbface2.ErrMessage{ErrString: ""}, nil
 }
 
 func (s *serverRemoveFacesFromDatabase) RemoveFacesFromDatabaseFunc(ctx context.Context, request *pbface2.RemoveFacesFromDatabaseMessage) (*pbface2.ErrMessage, error) {
 	db, err := ConnectToSQLDatabase()
 	if err != nil {
 		log.Println(err)
-		return nil, err
+		return &pbface2.ErrMessage{ErrString: ""}, err
 	}
 	var faceIDs []int
 	for i := 0; i < len(request.FaceIDs); i++ {
@@ -202,16 +210,16 @@ func (s *serverRemoveFacesFromDatabase) RemoveFacesFromDatabaseFunc(ctx context.
 	err = RemoveFacesFromDatabase(db, faceIDs)
 	if err != nil {
 		log.Println(err)
-		return nil, err
+		return &pbface2.ErrMessage{ErrString: ""}, err
 	}
-	return nil, nil
+	return &pbface2.ErrMessage{ErrString: ""}, nil
 }
 
 func (s *serverRemoveFilesFromDatabase) RemoveFilesFromDatabaseFunc(ctx context.Context, request *pbface2.RemoveFilesFromDatabaseMessage) (*pbface2.ErrMessage, error) {
 	db, err := ConnectToSQLDatabase()
 	if err != nil {
 		log.Println(err)
-		return nil, err
+		return &pbface2.ErrMessage{ErrString: ""}, err
 	}
 	var fileIDs []int
 	for i := 0; i < len(request.FileIDs); i++ {
@@ -220,7 +228,7 @@ func (s *serverRemoveFilesFromDatabase) RemoveFilesFromDatabaseFunc(ctx context.
 	err = RemoveFilesFromDatabase(db, fileIDs)
 	if err != nil {
 		log.Println(err)
-		return nil, err
+		return &pbface2.ErrMessage{ErrString: ""}, err
 	}
-	return nil, nil
+	return &pbface2.ErrMessage{ErrString: ""}, nil
 }

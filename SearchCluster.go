@@ -115,13 +115,7 @@ func SearchCluster(db *sql.DB, faceID int) error {
 		log.Println(err)
 		return err
 	}
-	//update mean vector of cluster
-	err = UpdateMeanVector(db, newClusterID)
-	if err != nil {
-		log.Println(err)
-		return err
-	}
-	//return the found or created clusterID
+	//return
 	return nil
 }
 

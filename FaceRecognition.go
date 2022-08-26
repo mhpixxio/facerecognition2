@@ -28,12 +28,12 @@ func FaceRecognition(db *sql.DB, fileID int) error {
 	//check file size
 	fi, err := os.Stat(pathToFile)
 	if err != nil {
-		log.Printf("0: %v", err)
+		log.Printf("%v", err)
 		return err
 	}
 	if fi.Size() > 100*1000000 {
 		err = errors.New("file too big")
-		log.Printf("0: %v, %v bytes", err, fi.Size())
+		log.Printf("%v, %v bytes", err, fi.Size())
 		return err
 	}
 	//check the format, and convert if necessary
@@ -112,5 +112,6 @@ func FaceRecognition(db *sql.DB, fileID int) error {
 		return err
 	}
 	//return
+	log.Printf("fileID %v; found %v faces\n", fileID, len(faces))
 	return nil
 }

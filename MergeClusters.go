@@ -26,16 +26,15 @@ func MergeClusters(db *sql.DB, clusterIDs []string) error {
 		}
 	}
 	log.Printf("merged %v faceclusters into 1\n", count)
-	err := RemoveClustersFromDatabase(db, clusterIDs[1:])
+	// err := RemoveClustersFromDatabase(db, clusterIDs[1:])
+	// if err != nil {
+	// 	log.Println(err)
+	// 	return err
+	// }
+	err := UpdateMeanVector(db, clusterIDs[0])
 	if err != nil {
 		log.Println(err)
 		return err
 	}
-	err = UpdateMeanVector(db, clusterIDs[0])
-	if err != nil {
-		log.Println(err)
-		return err
-	}
-
 	return nil
 }

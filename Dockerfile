@@ -24,10 +24,10 @@ RUN go mod download
 COPY *.go ./
 
 #run the go code
-RUN go build -o /docker-face-recognition
+RUN go build -o /facerecognition2
 
 #expose the port
 EXPOSE 8080
 
-CMD ["/docker-face-recognition"]
+CMD ["/facerecognition2"]
 
