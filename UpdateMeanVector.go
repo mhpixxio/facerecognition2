@@ -28,6 +28,13 @@ func UpdateMeanVector(db *sql.DB, clusterID string) error {
 		}
 		NumberOfRows++
 	}
+	//update numberFaces in cluster
+	_, err = db.Exec("UPDATE faceclusters SET numberFaces=? WHERE clusterID=?", NumberOfRows, clusterID)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	//only when the number of remaining faces is > 0 the meanVector gets updated. Otherwise it will stay the same. Clusters shouldn't be deleted because of the tree structure when searchiung for clusters
 	if NumberOfRows > 0 {
 		//calculate the new mean vector
 		var meanVector [128]float32

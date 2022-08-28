@@ -105,12 +105,6 @@ func FaceRecognition(db *sql.DB, fileID int) error {
 			return err
 		}
 	}
-	//update the files table
-	_, err = db.Exec("REPLACE INTO files (fileID, pathToFile, processed, forRemoval, removed) VALUES(?, ?, ?, ?, ?)", fileID, fileReturn.pathToFile, true, fileReturn.forRemoval, fileReturn.removed)
-	if err != nil {
-		log.Println(err)
-		return err
-	}
 	//return
 	log.Printf("fileID %v; found %v faces\n", fileID, len(faces))
 	return nil

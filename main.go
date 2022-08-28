@@ -51,8 +51,8 @@ type serverRenameCluster struct {
 type serverMergeClusters struct {
 	pbface2.MergeClustersServiceServer
 }
-type serverMoveFacesToAnotherCluster struct {
-	pbface2.MoveFacesToAnotherClusterServiceServer
+type serverManuallyMoveFacesToAnotherCluster struct {
+	pbface2.ManuallyMoveFacesToAnotherClusterServiceServer
 }
 type serverRemoveFacesFromDatabase struct {
 	pbface2.RemoveFacesFromDatabaseServiceServer
@@ -84,7 +84,7 @@ func main() {
 	pbface2.RegisterUpdateFacesAndClustersServiceServer(s, &serverUpdateFacesAndClusters{})
 	pbface2.RegisterRenameClusterServiceServer(s, &serverRenameCluster{})
 	pbface2.RegisterMergeClustersServiceServer(s, &serverMergeClusters{})
-	pbface2.RegisterMoveFacesToAnotherClusterServiceServer(s, &serverMoveFacesToAnotherCluster{})
+	pbface2.RegisterManuallyMoveFacesToAnotherClusterServiceServer(s, &serverManuallyMoveFacesToAnotherCluster{})
 	pbface2.RegisterRemoveFacesFromDatabaseServiceServer(s, &serverRemoveFacesFromDatabase{})
 	pbface2.RegisterRemoveFilesFromDatabaseServiceServer(s, &serverRemoveFilesFromDatabase{})
 	reflection.Register(s)
@@ -179,7 +179,7 @@ func (s *serverMergeClusters) MergeClusterFunc(ctx context.Context, request *pbf
 	return &pbface2.ErrMessage{ErrString: ""}, nil
 }
 
-func (s *serverMoveFacesToAnotherCluster) MoveFacesToAnotherClusterFunc(ctx context.Context, request *pbface2.MoveFacesToAnotherClusterMessage) (*pbface2.ErrMessage, error) {
+func (s *serverManuallyMoveFacesToAnotherCluster) ManuallyMoveFacesToAnotherClusterFunc(ctx context.Context, request *pbface2.ManuallyMoveFacesToAnotherClusterMessage) (*pbface2.ErrMessage, error) {
 	db, err := ConnectToSQLDatabase()
 	if err != nil {
 		log.Println(err)
@@ -189,7 +189,7 @@ func (s *serverMoveFacesToAnotherCluster) MoveFacesToAnotherClusterFunc(ctx cont
 	for i := 0; i < len(request.FaceIDs); i++ {
 		faceIDs[i] = int(request.FaceIDs[i].FaceID)
 	}
-	err = MoveFacesToAnotherCluster(db, faceIDs, request.ClusterID)
+	err = ManuallyMoveFacesToAnotherCluster(db, faceIDs, request.ClusterID)
 	if err != nil {
 		log.Println(err)
 		return &pbface2.ErrMessage{ErrString: ""}, err
