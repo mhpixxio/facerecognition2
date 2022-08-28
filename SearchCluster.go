@@ -7,9 +7,9 @@ import (
 )
 
 //thresholds when comparing the Squared Euclidean Distance between two face vectors
-const threshold1 float64 = 0.3   //goes into cluster for more comparison
-const threshold21 float64 = 0.29 //comparison of individual vectors. depends on the number of faces already in cluster. For 1 face in cluster the threshold is threshold21. For threshold2range number of files, the threshold is threshold22. Values between are linear.
-const threshold22 float64 = 0.24
+const threshold1 float64 = 0.4   //goes into cluster for more comparison
+const threshold21 float64 = 0.3 //comparison of individual vectors. depends on the number of faces already in cluster. For 1 face in cluster the threshold is threshold21. For threshold2range number of files, the threshold is threshold22. Values between are linear.
+const threshold22 float64 = 0.25
 const threshold2range float64 = 10
 const maxThresholdInCluster float64 = 0.6 //max distance between two vectors in cluster
 

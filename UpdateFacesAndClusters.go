@@ -60,7 +60,7 @@ func UpdateFacesAndClusters(db *sql.DB) error {
 		return err
 	}
 	//--------------------------------------- files table: go through all rows and check for unprocessed files -> do face recognition ---------------------------------------
-	rows, err := db.Query("SELECT * FROM files WHERE processed = ? ORDER BY RAND()", false)
+	rows, err := db.Query("SELECT * FROM files WHERE processed = ?", false)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -97,7 +97,7 @@ func UpdateFacesAndClusters(db *sql.DB) error {
 		log.Println(err)
 		return err
 	}
-	rows, err = db.Query("SELECT * FROM faces WHERE clusterID = ?", "")
+	rows, err = db.Query("SELECT * FROM faces WHERE clusterID = ? ORDER BY RAND()", "")
 	if err != nil {
 		log.Println(err)
 		return err
