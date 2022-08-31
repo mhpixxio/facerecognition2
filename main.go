@@ -48,6 +48,9 @@ type serverUpdateFacesAndClusters struct {
 type serverRenameCluster struct {
 	pbface2.RenameClusterServiceServer
 }
+type serverDeleteAllPersonNames struct {
+	pbface2.DeleteAllPersonNamesServiceServer
+}
 type serverMergeClusters struct {
 	pbface2.MergeClustersServiceServer
 }
@@ -83,6 +86,7 @@ func main() {
 	pbface2.RegisterReclusteringServiceServer(s, &serverReclustering{})
 	pbface2.RegisterUpdateFacesAndClustersServiceServer(s, &serverUpdateFacesAndClusters{})
 	pbface2.RegisterRenameClusterServiceServer(s, &serverRenameCluster{})
+	pbface2.RegisterDeleteAllPersonNamesServiceServer(s, &serverDeleteAllPersonNames{})
 	pbface2.RegisterMergeClustersServiceServer(s, &serverMergeClusters{})
 	pbface2.RegisterManuallyMoveFacesToAnotherClusterServiceServer(s, &serverManuallyMoveFacesToAnotherCluster{})
 	pbface2.RegisterRemoveFacesFromDatabaseServiceServer(s, &serverRemoveFacesFromDatabase{})
@@ -154,6 +158,20 @@ func (s *serverRenameCluster) RenameClusterFunc(ctx context.Context, request *pb
 		return &pbface2.ErrMessage{ErrString: ""}, err
 	}
 	err = RenameCluster(db, request.ClusterID, request.NewPersonName)
+	if err != nil {
+		log.Println(err)
+		return &pbface2.ErrMessage{ErrString: ""}, err
+	}
+	return &pbface2.ErrMessage{ErrString: ""}, nil
+}
+
+func (s *serverDeleteAllPersonNames) DeleteAllPersonNamesFunc(ctx context.Context, request *pbface2.EmptyMessage) (*pbface2.ErrMessage, error) {
+	db, err := ConnectToSQLDatabase()
+	if err != nil {
+		log.Println(err)
+		return &pbface2.ErrMessage{ErrString: ""}, err
+	}
+	err = DeleteAllPersonNames(db)
 	if err != nil {
 		log.Println(err)
 		return &pbface2.ErrMessage{ErrString: ""}, err

@@ -18,7 +18,9 @@ func RenameCluster(db *sql.DB, clusterID string, newPersonName string) error {
 		return err
 	}
 
-	log.Printf("clusterID: %v personName changed to: %v\n", clusterID, newPersonName)
-	return nil
+	if newPersonName != "" {
+		log.Printf("clusterID: %v personName changed to: %v\n", clusterID, newPersonName)
+	}
 
+	return nil
 }

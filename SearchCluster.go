@@ -7,9 +7,9 @@ import (
 )
 
 //thresholds when comparing the Squared Euclidean Distance between two face vectors
-const threshold1 float64 = 0.4   //goes into cluster for more comparison
-const threshold21 float64 = 0.3 //comparison of individual vectors. depends on the number of faces already in cluster. For 1 face in cluster the threshold is threshold21. For threshold2range number of files, the threshold is threshold22. Values between are linear.
-const threshold22 float64 = 0.25
+const threshold1 float64 = 0.3   //goes into cluster for more comparison
+const threshold21 float64 = 0.29 //comparison of individual vectors. depends on the number of faces already in cluster. For 1 face in cluster the threshold is threshold21. For threshold2range number of files, the threshold is threshold22. Values between are linear.
+const threshold22 float64 = 0.24
 const threshold2range float64 = 10
 const maxThresholdInCluster float64 = 0.6 //max distance between two vectors in cluster
 
@@ -30,7 +30,27 @@ func SearchCluster(db *sql.DB, faceID int) error {
 		log.Printf("faceById %d: %v\n", faceID, err)
 		return err
 	}
-	v := faceReturn.vector //the vector of the face currently used
+	v := faceReturn.vector //v = the vector of the face currently used
+	//check if cluster with that name already exists
+	var newCluster clusterStruct
+	newMeanVectorCluster := [128]float32{}
+	newCluster.meanVector = newMeanVectorCluster[:]
+	row = db.QueryRow("SELECT * FROM faceclusters WHERE personName = ?", faceReturn.personName)
+	err = row.Scan(&newCluster.clusterID, &newCluster.personName, &newCluster.numberFaces, &newCluster.meanVector[0], &newCluster.meanVector[1], &newCluster.meanVector[2], &newCluster.meanVector[3], &newCluster.meanVector[4], &newCluster.meanVector[5], &newCluster.meanVector[6], &newCluster.meanVector[7], &newCluster.meanVector[8], &newCluster.meanVector[9], &newCluster.meanVector[10], &newCluster.meanVector[11], &newCluster.meanVector[12], &newCluster.meanVector[13], &newCluster.meanVector[14], &newCluster.meanVector[15], &newCluster.meanVector[16], &newCluster.meanVector[17], &newCluster.meanVector[18], &newCluster.meanVector[19], &newCluster.meanVector[20], &newCluster.meanVector[21], &newCluster.meanVector[22], &newCluster.meanVector[23], &newCluster.meanVector[24], &newCluster.meanVector[25], &newCluster.meanVector[26], &newCluster.meanVector[27], &newCluster.meanVector[28], &newCluster.meanVector[29], &newCluster.meanVector[30], &newCluster.meanVector[31], &newCluster.meanVector[32], &newCluster.meanVector[33], &newCluster.meanVector[34], &newCluster.meanVector[35], &newCluster.meanVector[36], &newCluster.meanVector[37], &newCluster.meanVector[38], &newCluster.meanVector[39], &newCluster.meanVector[40], &newCluster.meanVector[41], &newCluster.meanVector[42], &newCluster.meanVector[43], &newCluster.meanVector[44], &newCluster.meanVector[45], &newCluster.meanVector[46], &newCluster.meanVector[47], &newCluster.meanVector[48], &newCluster.meanVector[49], &newCluster.meanVector[50], &newCluster.meanVector[51], &newCluster.meanVector[52], &newCluster.meanVector[53], &newCluster.meanVector[54], &newCluster.meanVector[55], &newCluster.meanVector[56], &newCluster.meanVector[57], &newCluster.meanVector[58], &newCluster.meanVector[59], &newCluster.meanVector[60], &newCluster.meanVector[61], &newCluster.meanVector[62], &newCluster.meanVector[63], &newCluster.meanVector[64], &newCluster.meanVector[65], &newCluster.meanVector[66], &newCluster.meanVector[67], &newCluster.meanVector[68], &newCluster.meanVector[69], &newCluster.meanVector[70], &newCluster.meanVector[71], &newCluster.meanVector[72], &newCluster.meanVector[73], &newCluster.meanVector[74], &newCluster.meanVector[75], &newCluster.meanVector[76], &newCluster.meanVector[77], &newCluster.meanVector[78], &newCluster.meanVector[79], &newCluster.meanVector[80], &newCluster.meanVector[81], &newCluster.meanVector[82], &newCluster.meanVector[83], &newCluster.meanVector[84], &newCluster.meanVector[85], &newCluster.meanVector[86], &newCluster.meanVector[87], &newCluster.meanVector[88], &newCluster.meanVector[89], &newCluster.meanVector[90], &newCluster.meanVector[91], &newCluster.meanVector[92], &newCluster.meanVector[93], &newCluster.meanVector[94], &newCluster.meanVector[95], &newCluster.meanVector[96], &newCluster.meanVector[97], &newCluster.meanVector[98], &newCluster.meanVector[99], &newCluster.meanVector[100], &newCluster.meanVector[101], &newCluster.meanVector[102], &newCluster.meanVector[103], &newCluster.meanVector[104], &newCluster.meanVector[105], &newCluster.meanVector[106], &newCluster.meanVector[107], &newCluster.meanVector[108], &newCluster.meanVector[109], &newCluster.meanVector[110], &newCluster.meanVector[111], &newCluster.meanVector[112], &newCluster.meanVector[113], &newCluster.meanVector[114], &newCluster.meanVector[115], &newCluster.meanVector[116], &newCluster.meanVector[117], &newCluster.meanVector[118], &newCluster.meanVector[119], &newCluster.meanVector[120], &newCluster.meanVector[121], &newCluster.meanVector[122], &newCluster.meanVector[123], &newCluster.meanVector[124], &newCluster.meanVector[125], &newCluster.meanVector[126], &newCluster.meanVector[127])
+	if err != nil && err != sql.ErrNoRows {
+		log.Printf("error: %v\n", err)
+		return err
+	}
+	if err != sql.ErrNoRows && faceReturn.personName != "" {
+		//move the face to that cluster
+		err = MoveFacesToAnotherCluster(db, []int{faceID}, newCluster.clusterID)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		//return
+		return nil
+	}
 	//get possible clusters
 	possibleClusters, endpoints, err := GetPossibleClusters(db, v, threshold1, "1")
 	if err != nil {
@@ -114,6 +134,25 @@ func SearchCluster(db *sql.DB, faceID int) error {
 	if err != nil {
 		log.Println(err)
 		return err
+	}
+	//if this face was the first entry to the cluster, and the face has a personName -> rename cluster to that personName. At "UpdateFacesAndClusters.go" it always starts with the face entries which have personNames (important for this step!). The number of faces in the cluster gets updated in "UpdateMeanVector.go"
+	if faceReturn.personName != "" {
+		var newNewCluster clusterStruct
+		newVectorCluster := [128]float32{}
+		newNewCluster.meanVector = newVectorCluster[:]
+		row = db.QueryRow("SELECT * FROM faceclusters WHERE clusterID = ?", newClusterID)
+		err = row.Scan(&newNewCluster.clusterID, &newNewCluster.personName, &newNewCluster.numberFaces, &newNewCluster.meanVector[0], &newNewCluster.meanVector[1], &newNewCluster.meanVector[2], &newNewCluster.meanVector[3], &newNewCluster.meanVector[4], &newNewCluster.meanVector[5], &newNewCluster.meanVector[6], &newNewCluster.meanVector[7], &newNewCluster.meanVector[8], &newNewCluster.meanVector[9], &newNewCluster.meanVector[10], &newNewCluster.meanVector[11], &newNewCluster.meanVector[12], &newNewCluster.meanVector[13], &newNewCluster.meanVector[14], &newNewCluster.meanVector[15], &newNewCluster.meanVector[16], &newNewCluster.meanVector[17], &newNewCluster.meanVector[18], &newNewCluster.meanVector[19], &newNewCluster.meanVector[20], &newNewCluster.meanVector[21], &newNewCluster.meanVector[22], &newNewCluster.meanVector[23], &newNewCluster.meanVector[24], &newNewCluster.meanVector[25], &newNewCluster.meanVector[26], &newNewCluster.meanVector[27], &newNewCluster.meanVector[28], &newNewCluster.meanVector[29], &newNewCluster.meanVector[30], &newNewCluster.meanVector[31], &newNewCluster.meanVector[32], &newNewCluster.meanVector[33], &newNewCluster.meanVector[34], &newNewCluster.meanVector[35], &newNewCluster.meanVector[36], &newNewCluster.meanVector[37], &newNewCluster.meanVector[38], &newNewCluster.meanVector[39], &newNewCluster.meanVector[40], &newNewCluster.meanVector[41], &newNewCluster.meanVector[42], &newNewCluster.meanVector[43], &newNewCluster.meanVector[44], &newNewCluster.meanVector[45], &newNewCluster.meanVector[46], &newNewCluster.meanVector[47], &newNewCluster.meanVector[48], &newNewCluster.meanVector[49], &newNewCluster.meanVector[50], &newNewCluster.meanVector[51], &newNewCluster.meanVector[52], &newNewCluster.meanVector[53], &newNewCluster.meanVector[54], &newNewCluster.meanVector[55], &newNewCluster.meanVector[56], &newNewCluster.meanVector[57], &newNewCluster.meanVector[58], &newNewCluster.meanVector[59], &newNewCluster.meanVector[60], &newNewCluster.meanVector[61], &newNewCluster.meanVector[62], &newNewCluster.meanVector[63], &newNewCluster.meanVector[64], &newNewCluster.meanVector[65], &newNewCluster.meanVector[66], &newNewCluster.meanVector[67], &newNewCluster.meanVector[68], &newNewCluster.meanVector[69], &newNewCluster.meanVector[70], &newNewCluster.meanVector[71], &newNewCluster.meanVector[72], &newNewCluster.meanVector[73], &newNewCluster.meanVector[74], &newNewCluster.meanVector[75], &newNewCluster.meanVector[76], &newNewCluster.meanVector[77], &newNewCluster.meanVector[78], &newNewCluster.meanVector[79], &newNewCluster.meanVector[80], &newNewCluster.meanVector[81], &newNewCluster.meanVector[82], &newNewCluster.meanVector[83], &newNewCluster.meanVector[84], &newNewCluster.meanVector[85], &newNewCluster.meanVector[86], &newNewCluster.meanVector[87], &newNewCluster.meanVector[88], &newNewCluster.meanVector[89], &newNewCluster.meanVector[90], &newNewCluster.meanVector[91], &newNewCluster.meanVector[92], &newNewCluster.meanVector[93], &newNewCluster.meanVector[94], &newNewCluster.meanVector[95], &newNewCluster.meanVector[96], &newNewCluster.meanVector[97], &newNewCluster.meanVector[98], &newNewCluster.meanVector[99], &newNewCluster.meanVector[100], &newNewCluster.meanVector[101], &newNewCluster.meanVector[102], &newNewCluster.meanVector[103], &newNewCluster.meanVector[104], &newNewCluster.meanVector[105], &newNewCluster.meanVector[106], &newNewCluster.meanVector[107], &newNewCluster.meanVector[108], &newNewCluster.meanVector[109], &newNewCluster.meanVector[110], &newNewCluster.meanVector[111], &newNewCluster.meanVector[112], &newNewCluster.meanVector[113], &newNewCluster.meanVector[114], &newNewCluster.meanVector[115], &newNewCluster.meanVector[116], &newNewCluster.meanVector[117], &newNewCluster.meanVector[118], &newNewCluster.meanVector[119], &newNewCluster.meanVector[120], &newNewCluster.meanVector[121], &newNewCluster.meanVector[122], &newNewCluster.meanVector[123], &newNewCluster.meanVector[124], &newNewCluster.meanVector[125], &newNewCluster.meanVector[126], &newNewCluster.meanVector[127])
+		if err != nil && err != sql.ErrNoRows {
+			log.Printf("error: %v\n", err)
+			return err
+		}
+		if newNewCluster.numberFaces == 1 {
+			err = RenameCluster(db, newClusterID, faceReturn.personName)
+			if err != nil {
+				log.Println(err)
+				return err
+			}
+		}
 	}
 	//return
 	return nil
