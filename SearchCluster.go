@@ -14,6 +14,11 @@ const threshold22 float64 = 0.24
 const threshold2range float64 = 10
 const maxThresholdInCluster float64 = 0.6 //max distance between two vectors in cluster
 
+//activate 2-step-search
+//if the clostes match should be determined by the 2-step-approach, then change this variable to true, otherwiese it will only compare the cluster centers. It will then either use distancesToClusterCenters or distancesByTwoStepApproach for the search.
+const useTwoStepApproachBool bool = true
+
+//start search
 func SearchCluster(db *sql.DB, faceID int) error {
 	//set variables
 	var faceReturn faceStruct
@@ -59,8 +64,6 @@ func SearchCluster(db *sql.DB, faceID int) error {
 		log.Println(err)
 		return err
 	}
-	//if the clostes match should be determined by the 2-step-approach, then change this variable to true. It will then either use distancesToClusterCenters or distancesByTwoStepApproach for the search.
-	useTwoStepApproachBool := true
 	//narrow down the clusters
 	if useTwoStepApproachBool {
 		var distancesByTwoStepApproach []float64

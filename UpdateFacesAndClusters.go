@@ -81,7 +81,6 @@ func UpdateFacesAndClusters(db *sql.DB) error {
 				return err
 			}
 		}
-
 	}
 	//update files table
 	_, err = db.Exec("UPDATE files SET removed=? WHERE forRemoval=?", true, true)
@@ -124,7 +123,6 @@ func UpdateFacesAndClusters(db *sql.DB) error {
 			log.Println(err)
 			return err
 		}
-
 	}
 	//--------------------------------------- faces table: go through all rows and check for clusterID is "" -> assign cluster ---------------------------------------
 	var timeBenchmarkingClustering [][]int
