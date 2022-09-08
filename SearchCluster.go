@@ -160,7 +160,7 @@ func SearchCluster(db *sql.DB, faceID int) error {
 		log.Println(err)
 		return err
 	}
-	//if this face was the first entry to the cluster, and the face has a personName -> rename cluster to that personName. At "UpdateFacesAndClusters.go" it always starts with the face entries which have personNames (important for this step!). The number of faces in the cluster gets updated in "UpdateMeanVector.go"
+	//if the cluster has no personName, and the face has a personName -> rename cluster to that personName. At "UpdateFacesAndClusters.go" it always starts with the face entries which have personNames (important for this step!). The number of faces in the cluster gets updated in "UpdateMeanVector.go"
 	if faceReturn.personName != "" {
 		var newNewCluster clusterStruct
 		newVectorCluster := [128]float32{}
@@ -171,7 +171,7 @@ func SearchCluster(db *sql.DB, faceID int) error {
 			log.Printf("error: %v\n", err)
 			return err
 		}
-		if newNewCluster.numberFaces == 1 {
+		if newNewCluster.personName == "" {
 			err = RenameCluster(db, newClusterID, faceReturn.personName)
 			if err != nil {
 				log.Println(err)

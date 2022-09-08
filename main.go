@@ -179,7 +179,7 @@ func (s *serverDeleteAllPersonNames) DeleteAllPersonNamesFunc(ctx context.Contex
 	return &pbface2.ErrMessage{ErrString: ""}, nil
 }
 
-func (s *serverMergeClusters) MergeClusterFunc(ctx context.Context, request *pbface2.MergeClustersMessage) (*pbface2.ErrMessage, error) {
+func (s *serverMergeClusters) MergeClustersFunc(ctx context.Context, request *pbface2.MergeClustersMessage) (*pbface2.ErrMessage, error) {
 	db, err := ConnectToSQLDatabase()
 	if err != nil {
 		log.Println(err)
