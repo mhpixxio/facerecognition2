@@ -6,20 +6,33 @@ import (
 	"math"
 )
 
-//thresholds when comparing the Squared Euclidean Distance between two face vectors
-const threshold1 float64 = 0.3 //goes into cluster for more comparison
-//for 2-step-approach
-const threshold21 float64 = 0.29 //comparison of individual vectors. depends on the number of faces already in cluster. For 1 face in cluster the threshold is threshold21. For threshold2range number of files, the threshold is threshold22. Values between are linear.
+//------------------------------------- thresholds when comparing the Squared Euclidean Distance between two face vectors -------------------------------------
+
+//threshold for comparing via cluster centers approach
+const threshold1Center float64 = 0.26
+
+//threshold when comparing via 2 step approach
+const threshold1TwoStep float64 = 0.3 //goes into cluster for more comparison
+const threshold21 float64 = 0.29      //comparison of individual vectors. depends on the number of faces already in cluster. For 1 face in cluster the threshold is threshold21. For threshold2range number of files, the threshold is threshold22. Values between are linear.
 const threshold22 float64 = 0.24
 const threshold2range float64 = 10
 const maxThresholdInCluster float64 = 0.6 //max distance between two vectors in cluster
 
-//activate 2-step-search
+//------------------------------------- activate 2-step-search -------------------------------------
+
 //if the clostes match should be determined by the 2-step-approach, then change this variable to true, otherwiese it will only compare the cluster centers. It will then either use distancesToClusterCenters or distancesByTwoStepApproach for the search.
 const useTwoStepApproachBool bool = true
 
-//start search
+//------------------------------------- start search -------------------------------------
+
 func SearchCluster(db *sql.DB, faceID int) error {
+	//set first threshold depending on the approach chosen
+	var threshold1 float64
+	if useTwoStepApproachBool {
+		threshold1 = threshold1TwoStep
+	} else {
+		threshold1 = threshold1Center
+	}
 	//set variables
 	var faceReturn faceStruct
 	newVector := [128]float32{}
