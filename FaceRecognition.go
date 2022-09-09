@@ -3,19 +3,17 @@ package main
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"time"
 
 	face "github.com/Kagami/go-face"
 )
 
 func FaceRecognition(db *sql.DB, fileID int) (numberOfFaces int, errReturn error) {
-	start := time.Now()
+	// start := time.Now()
 	//get pathtofile
 	var fileReturn fileStruct
 	row := db.QueryRow("SELECT * FROM files WHERE fileID = ?", fileID)
@@ -109,8 +107,8 @@ func FaceRecognition(db *sql.DB, fileID int) (numberOfFaces int, errReturn error
 		}
 	}
 	//return
-	elapsed := float64(time.Since(start))/1000000000
-	fmt.Printf("%v   %v\n", elapsed, len(faces))
+	// elapsed := float64(time.Since(start))/1000000000
+	// fmt.Printf("%v   %v\n", elapsed, len(faces))
 	//log.Printf("fileID %v; found %v faces\n", fileID, len(faces))
 	return len(faces), nil
 }
