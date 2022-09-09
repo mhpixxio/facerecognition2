@@ -3,7 +3,7 @@ package main
 //----------- instructions -----------
 //build the SQL tables. In the MySQL 8.0 Command Line:
 //$ use facerecognition
-//$ source <absolute path to sql file>
+//$ source <absolute path to sql file create-tables.sql found in the directory SQLFiles>
 //build the Docker Image (Docker Dekstop must be running)
 //$ docker build -t facerecognition2 .
 //run the docker image as container
